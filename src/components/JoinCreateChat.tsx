@@ -3,6 +3,8 @@ import GlassSurface from './GlassSurface';
 import Silk from './Silk';
 import { Button } from './ui/button';
 import iconImg from '../assets/chat.png'
+import '../App.css'
+import '../index.css'
 
 
 
