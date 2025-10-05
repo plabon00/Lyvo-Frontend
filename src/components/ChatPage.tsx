@@ -20,47 +20,6 @@ function ChatPage() {
             content: "Hello?",
             sender: "Plaban"
         },
-        {
-            content: "Hello?",
-            sender: "Plabon"
-        },
-        {
-            content: "Hello?",
-            sender: "Plaban"
-        },
-        {
-            content: "Hello?",
-            sender: "Plabon"
-        },
-        {
-            content: "Hello?",
-            sender: "Plaban"
-        },
-        {
-            content: "Hello?",
-            sender: "Plabon"
-        },
-        {
-            content: "Hello?",
-            sender: "Plaban"
-        },
-        {
-            content: "Hello?",
-            sender: "Plabon"
-        },
-        {
-            content: "Hello?",
-            sender: "Plaban"
-        },
-        {
-            content: "Hello?",
-            sender: "Plabon"
-        },
-        {
-            content: "Hellodfkvndjkafnvkajnvjanvlkanlkcnjsanvbivhqneoiuwrhfopicqiwforurxeoqpijefiqjwenabchfgbqiwrfwehfcqregbfnuhnawuecm?",
-            sender: "Plaban"
-        },
-
     ]);
     const [input, setInput] = useState("");
     const inputRef = useState(null);
@@ -71,7 +30,7 @@ function ChatPage() {
 
     return (
         <>
-            <div className="dark:bg-gray-900 dark:text-neutral-50 bg-gray-200 w-screen h-screen">
+            <div className="dark:bg-gray-950 dark:text-neutral-50 bg-gray-200 w-screen h-screen">
 
                 <header className="h-20 fixed w-full flex justify-center items-center mt-5">
                     <GlassSurface
@@ -101,7 +60,7 @@ function ChatPage() {
                 </header>
 
                 <main className="w-2/4 mx-auto pb-20 pt-28 h-screen">
-    <div className="w-full h-full bg-gray-950 overflow-auto">
+    <div className="w-full h-full bg-gray-900 rounded-2xl overflow-auto">
         {
             messages.map((message, index) => (
                 <div key={index} className={`flex ${message.sender === currentUser ? "justify-end" : "justify-start"} px-4`}>
@@ -130,7 +89,7 @@ function ChatPage() {
 
 
                 <div className="fixed bottom-2 w-full h-16 flex justify-center ">
-                    <div className="h-full rounded w-2/4 dark:bg-gray-900 bg-gray-300 flex justify-between items-center gap-6 px-10">
+                    <div className="h-full rounded w-2/4 flex justify-between items-center gap-6 px-10">
 
                         <Input type="text" placeholder="Type here ...." className="dark:text-neutral-50 py-5 text-black rounded-full px-5 border-gray-900 dark:border-gray-50" />
                         <Button type="submit" size="lg" variant="outline" className="rounded-full bg-purple-600 dark:text-gray-100">

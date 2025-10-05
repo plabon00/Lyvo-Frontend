@@ -11,7 +11,7 @@ ReactDOM.createRoot(root as HTMLElement).render(
   <StrictMode>
     <BrowserRouter>
       <AppRouter/>
-      <Toaster position='top-right'/>
+      <Toaster position='top-center'/>
     </BrowserRouter>
   </StrictMode>,
 )

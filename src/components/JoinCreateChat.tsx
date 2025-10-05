@@ -5,10 +5,45 @@ import { Button } from './ui/button';
 import iconImg from '../assets/chat.png'
 import '../App.css'
 import '../index.css'
+import { useState } from "react";
+import toast from "react-hot-toast";
 
 
 
 const JoinCreateChat = () => {
+
+    const [details, setDetails] = useState({
+        roomId: "",
+        userName: ""
+    })
+
+    function handleFormInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setDetails({
+            ...details,
+            [event.target.name]: event.target.value,
+        });
+    }
+
+    function joinChat() {
+        if(validateForm()){
+
+        }
+    }
+
+    function createChat() {
+        if (validateForm()) {
+            console.log(details.userName , details.roomId)
+        }
+    }
+
+    function validateForm(){
+        if (details.userName==="" || details.roomId === "") {
+            toast.error("Invalid Name or Room ID")
+            return false
+        }
+        else return true
+    }
+
     return (
         <div className='min-h-screen flex justify-center items-center'>
 
@@ -29,9 +64,9 @@ const JoinCreateChat = () => {
                 >
                     <div className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 flex flex-col justify-center items-center text-white">
                         <div >
-                            <img src={iconImg} alt="ChatIcon" className="w-20"/>
+                            <img src={iconImg} alt="ChatIcon" className="w-20" />
                         </div>
-                        <MorphingText texts={["Join", "Create"]} className="items-center p-0 mb-10"/>
+                        <MorphingText texts={["Join", "Create"]} className="items-center p-0 mb-10" />
 
                         <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
                             {/* Form container with responsive width */}
@@ -50,13 +85,14 @@ const JoinCreateChat = () => {
                                         width="100%"
                                     >
                                         <input
+                                            onChange={handleFormInputChange}
+                                            value={details.userName}
                                             type="text"
-                                            id="roomId"
-                                            name="roomId"
+                                            id="name"
+                                            name="userName"
+                                            placeholder="Enter Your Name"
                                             className="mx-3 w-70 h-full bg-transparent border-0 outline-0
                  text-[10px] sm:text-xs md:text-sm font-mono text-white placeholder-gray-400 py-1 transition-all"
-                                            
-                                            placeholder="Enter Your Name"
                                         />
                                     </GlassSurface>
                                 </div>
@@ -75,23 +111,25 @@ const JoinCreateChat = () => {
                                         className="p-0"
                                     >
                                         <input
+                                            onChange={handleFormInputChange}
+                                            value={details.roomId}
                                             type="text"
                                             id="roomId"
                                             name="roomId"
+                                            placeholder="Enter room ID"
                                             className="w-70 mx-3 h-full bg-transparent border-0 outline-0
                  text-[10px] sm:text-xs md:text-sm font-mono text-white placeholder-gray-400 py-1 transition-all"
-                                            placeholder="Enter room ID"
                                         />
                                     </GlassSurface>
                                 </div>
                             </div>
 
 
-                                {/* Action Buttons */}
-                                <div className="flex xs:flex-row gap-4 sm:gap-6 pt-1 sm:pt-2 mt-10 justify-center cursor-pointer">
-                                    <Button variant="outline" className="bg-transparent rounded-full text-10 font-mono h-auto hover:bg-fuchsia-950 hover:brightness-100 active:brightness-200">Join Room</Button>
-                                    <Button variant="outline" className="bg-transparent rounded-full text-10 font-mono h-auto hover:bg-fuchsia-950 hover:brightness-100 active:brightness-200">Create Room</Button>
-                                </div>
+                            {/* Action Buttons */}
+                            <div className="flex xs:flex-row gap-4 sm:gap-6 pt-1 sm:pt-2 mt-10 justify-center cursor-pointer">
+                                <Button onClick={joinChat} variant="outline" className="bg-transparent rounded-full text-10 font-mono h-auto hover:bg-fuchsia-950 hover:brightness-100 active:brightness-200">Join Room</Button>
+                                <Button onClick={createChat} variant="outline" className="bg-transparent rounded-full text-10 font-mono h-auto hover:bg-fuchsia-950 hover:brightness-100 active:brightness-200">Create Room</Button>
+                            </div>
                         </div>
                     </div>
 
