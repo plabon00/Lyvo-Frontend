@@ -7,15 +7,22 @@ import '../App.css'
 import '../index.css'
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { createRoomApi, joinRoomApi } from '../services/RoomServices'
+import useChatContext from "@/context/ChatContext";
+import { useNavigate } from "react-router-dom";
 
 
 
 const JoinCreateChat = () => {
 
+    const navigate = useNavigate() ;
+
     const [details, setDetails] = useState({
         roomId: "",
         userName: ""
     })
+
+    const { roomId, currentUser, setRoomId, setCurrentUser , setConnected } = useChatContext()
 
     function handleFormInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setDetails({
@@ -24,20 +31,59 @@ const JoinCreateChat = () => {
         });
     }
 
-    function joinChat() {
-        if(validateForm()){
-
-        }
-    }
-
-    function createChat() {
+  async  function joinChat() {
         if (validateForm()) {
-            console.log(details.userName , details.roomId)
+
+
+            try {
+                
+                const room = await joinRoomApi(details.roomId) ;
+                toast.success("Joined..😎")
+
+                setCurrentUser(details.userName);
+                setRoomId(room.roomId);
+                setConnected(true) ;
+                navigate('/chat')
+
+            } catch (error : any) {
+                if (error.status == 400) {
+                    toast.error(error.response.data) ;
+                }
+            }
+
         }
     }
 
-    function validateForm(){
-        if (details.userName==="" || details.roomId === "") {
+    async function createChat() {
+        if (validateForm()) {
+            console.log(details.userName, details.roomId)
+
+            try {
+                var response = await createRoomApi(details.roomId);
+                console.log(response);
+                toast.success("Room Created Successful");
+
+                setCurrentUser(details.userName);
+                setRoomId(details.roomId);
+                setConnected(true) ;
+
+                // Forward to chat Page 
+
+                navigate("/chat")
+
+            } catch (error: any) {
+                if (error.status === 400) {
+                    toast.error("Room Already Exist")
+                } else {
+                    console.log("Error While Creatign a Room")
+                }
+            }
+
+        }
+    }
+
+    function validateForm() {
+        if (details.userName === "" || details.roomId === "") {
             toast.error("Invalid Name or Room ID")
             return false
         }
