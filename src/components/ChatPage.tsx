@@ -21,7 +21,7 @@ function ChatPage() {
     }
   }, [connected, roomId, currentUser]);
 
-  const [messages, setMessagese] = useState([
+  const [messages, setMessages] = useState([
     {
       content: "Hello?",
       sender: "Plabon",
@@ -44,36 +44,52 @@ function ChatPage() {
 
   // subscribe
 
-  useEffect(() => {
+
+useEffect(() => {
+    let client: Client | null = null;
+
     const connectWebSocket = () => {
+      console.log("Attempting to connect to WebSocket...");
       
-      // SockJs
-      const sock = new SockJS("http://localhost:8080/chat") ;
+      // Modern approach - no warnings
+      client = new Client({
+        webSocketFactory: () => new SockJS("http://localhost:8080/chat"),
+        onConnect: (frame) => {
+          console.log("WebSocket connected successfully!");
+          setStompClient(client);
+          toast.success("Connected :)");
 
-      const client = Stomp.over(sock) ;
+          client?.subscribe(`/topic/room/${roomId}`, (message) => {
+            console.log(message);
+            const newMessage = JSON.parse(message.body);
+            setMessages((prev: any) => [...prev, newMessage]);
+          });
+        },
+        onStompError: (frame) => {
+          console.error('STOMP error:', frame);
+        }
+      });
 
-      client.connect({} , () => {
-
-        setStompClient(client) ;
-
-        toast.success("Connected :) ")
-
-        client.subscribe(`/topic/room/${roomId}`, (message) => {
-        console. log (message) ;
-
-        const newMessage = JSON.parse(message.body) ;
-        setMessagese((prev) => [...prev, newMessage]) ;
-
-        //rest of the work after success receiving the message
-
-      }) ;
-
-    }) ;
-  }
+      client.activate();
+    };
+    
     connectWebSocket();
 
-  }, [roomId]
-);
+    // Cleanup function
+    return () => {
+      if (client && client.active) {
+        console.log("Deactivating WebSocket connection...");
+        client.deactivate();
+      }
+    };
+
+}, [roomId]);
+
+
+
+
+
+
 
   // send message Handle
 
