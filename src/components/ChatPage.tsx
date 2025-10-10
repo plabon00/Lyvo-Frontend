@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import useChatContext from "@/context/ChatContext";
 import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
-import { Stomp, Client } from '@stomp/stompjs';
+import { Stomp, Client } from "@stomp/stompjs";
 import toast from "react-hot-toast";
 
 function ChatPage() {
@@ -44,13 +44,12 @@ function ChatPage() {
 
   // subscribe
 
-
-useEffect(() => {
+  useEffect(() => {
     let client: Client | null = null;
 
     const connectWebSocket = () => {
       console.log("Attempting to connect to WebSocket...");
-      
+
       // Modern approach - no warnings
       client = new Client({
         webSocketFactory: () => new SockJS("http://localhost:8080/chat"),
@@ -66,13 +65,13 @@ useEffect(() => {
           });
         },
         onStompError: (frame) => {
-          console.error('STOMP error:', frame);
-        }
+          console.error("STOMP error:", frame);
+        },
       });
 
       client.activate();
     };
-    
+
     connectWebSocket();
 
     // Cleanup function
@@ -82,23 +81,45 @@ useEffect(() => {
         client.deactivate();
       }
     };
-
-}, [roomId]);
-
-
-
-
-
-
+  }, [roomId]);
 
   // send message Handle
 
+  const sendMessage = async () => {
+  if (connected && stompClient && input.trim()) {
+    console.log("Input:", input);
 
-  const sendMessage = async () =>{
-    if (connected && stompClient && input.trim()) {
-      console.log(input)
+    const message = {
+      sender: currentUser,
+      content: input,
+      roomId: roomId,
+
+    };
+
+    console.log("Message to send:", message);
+
+    try {
+      stompClient.publish({
+        destination: `/app/sendMessage/${roomId}`, // ✅ Add /app prefix
+        body: JSON.stringify(message),
+      });
+      
+      console.log("✅ Message published successfully!");
+      toast.success("Message sent!"); // Visual confirmation
+      setInput("");
+      
+    } catch (error) {
+      console.error("❌ Error publishing message:", error);
+      toast.error("Failed to send message");
     }
+  } else {
+    console.log("❌ Cannot send message:");
+    console.log("- Connected:", connected);
+    console.log("- StompClient:", !!stompClient);
+    console.log("- Input:", input);
   }
+};
+
 
   return (
     <>
@@ -191,8 +212,12 @@ useEffect(() => {
             <Input
               type="text"
               placeholder="Type here ...."
+              value={input} // Add this
+              onChange={(e) => setInput(e.target.value)} // Add this
+              onKeyDown={(e) => e.key === "Enter" && sendMessage()} // Optional: send on Enter
               className="dark:text-neutral-50 py-5 text-black rounded-full px-5 border-gray-900 dark:border-gray-50"
             />
+
             <Button
               type="submit"
               size="lg"
@@ -204,6 +229,7 @@ useEffect(() => {
             <Button
               type="submit"
               size="lg"
+              onClick={sendMessage}
               className="rounded-full bg-green-600 dark:text-gray-100"
               variant="outline"
             >

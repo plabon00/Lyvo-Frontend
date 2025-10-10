@@ -9,12 +9,11 @@ import {ChatProvider} from './context/ChatContext'
 const root = document.getElementById("root");
 
 ReactDOM.createRoot(root as HTMLElement).render(
-  <StrictMode>
+  
     <BrowserRouter>
       <ChatProvider>
         <Toaster position='top-center'/>
         <AppRouter/>
       </ChatProvider>
-    </BrowserRouter>
-  </StrictMode>,
+    </BrowserRouter>,
 )
