@@ -25,7 +25,6 @@ function ChatPage() {
 
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
-  const inputRef = useState(null);
   const chatBoxRef = useRef<HTMLDivElement>(null);
   const [stompClient, setStompClient] = useState<Client | null>(null);
 
@@ -77,7 +76,7 @@ function ChatPage() {
       // Modern approach - no warnings
       client = new Client({
         webSocketFactory: () => new SockJS("http://localhost:8080/chat"),
-        onConnect: (frame) => {
+        onConnect: () => {
           console.log("WebSocket connected successfully!");
           setStompClient(client);
           toast.success("Connected :)");

@@ -22,7 +22,7 @@ const JoinCreateChat = () => {
         userName: ""
     })
 
-    const { roomId, currentUser,connected, setRoomId, setCurrentUser , setConnected } = useChatContext()
+    const {setRoomId, setCurrentUser , setConnected } = useChatContext()
 
     function handleFormInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setDetails({
