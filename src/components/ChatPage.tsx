@@ -12,6 +12,7 @@ import { Client } from "@stomp/stompjs";
 import toast from "react-hot-toast";
 import { getMessage } from "@/services/RoomServices";
 import { getTimeAgo } from "@/config/helper";
+const BackendURL = import.meta.env.VITE_BACKEND_URL ;
 
 function ChatPage() {
   const { roomId, currentUser, connected , setConnected , setCurrentUser,setRoomId} = useChatContext();
@@ -75,7 +76,7 @@ function ChatPage() {
 
       // Modern approach - no warnings
       client = new Client({
-        webSocketFactory: () => new SockJS("http://localhost:8080/chat"),
+        webSocketFactory: () => new SockJS(`${BackendURL}/chat`),
         onConnect: () => {
           console.log("WebSocket connected successfully!");
           setStompClient(client);
