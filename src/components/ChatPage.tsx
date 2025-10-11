@@ -4,15 +4,17 @@ import { Input } from "@/components/ui/input";
 import "@/index.css";
 import { IoSend } from "react-icons/io5";
 import { FaFileUpload } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useChatContext from "@/context/ChatContext";
 import { useNavigate } from "react-router-dom";
 import SockJS from "sockjs-client";
-import { Stomp, Client } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
 import toast from "react-hot-toast";
+import { getMessage } from "@/services/RoomServices";
+import { getTimeAgo } from "@/config/helper";
 
 function ChatPage() {
-  const { roomId, currentUser, connected } = useChatContext();
+  const { roomId, currentUser, connected , setConnected , setCurrentUser,setRoomId} = useChatContext();
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -21,24 +23,46 @@ function ChatPage() {
     }
   }, [connected, roomId, currentUser]);
 
-  const [messages, setMessages] = useState([
-    {
-      content: "Hello?",
-      sender: "Plabon",
-    },
-    {
-      content: "Hello?",
-      sender: "Plaban",
-    },
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const inputRef = useState(null);
-  const chatBoxRef = useState(null);
+  const chatBoxRef = useRef<HTMLDivElement>(null);
   const [stompClient, setStompClient] = useState<Client | null>(null);
+
+  //Auto Scroll
+
+  useEffect(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scroll({
+        top: chatBoxRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
 
   // Page Initialize
 
   // messages ko load karne honge
+
+  useEffect(() => {
+    async function loadMessage() {
+      try {
+        console.log("Loading messages for room:", roomId);
+        const message = await getMessage(roomId);
+        setMessages(message);
+        console.log("Messages loaded successfully:", message);
+      } catch (error) {
+        console.log("Error in Load Message");
+        console.log(error);
+        toast.error("Failed to load messages");
+      }
+    }
+
+    if (roomId) {
+      // Only load if roomId exists
+      loadMessage();
+    }
+  }, [roomId]); // ✅ Add dependency array - runs when roomId changes
 
   // stompClient ko init karne honge
 
@@ -86,40 +110,60 @@ function ChatPage() {
   // send message Handle
 
   const sendMessage = async () => {
-  if (connected && stompClient && input.trim()) {
-    console.log("Input:", input);
+    if (connected && stompClient && input.trim()) {
+      console.log("Input:", input);
 
-    const message = {
-      sender: currentUser,
-      content: input,
-      roomId: roomId,
+      const message = {
+        sender: currentUser,
+        content: input,
+        roomId: roomId,
+      };
 
-    };
+      console.log("Message to send:", message);
 
-    console.log("Message to send:", message);
+      try {
+        stompClient.publish({
+          destination: `/app/sendMessage/${roomId}`, // ✅ Add /app prefix
+          body: JSON.stringify(message),
+        });
 
-    try {
-      stompClient.publish({
-        destination: `/app/sendMessage/${roomId}`, // ✅ Add /app prefix
-        body: JSON.stringify(message),
-      });
-      
-      console.log("✅ Message published successfully!");
-      toast.success("Message sent!"); // Visual confirmation
-      setInput("");
-      
-    } catch (error) {
-      console.error("❌ Error publishing message:", error);
-      toast.error("Failed to send message");
+        console.log("✅ Message published successfully!");
+        toast.success("Message sent!"); // Visual confirmation
+        setInput("");
+      } catch (error) {
+        console.error("❌ Error publishing message:", error);
+        toast.error("Failed to send message");
+      }
+    } else {
+      console.log("❌ Cannot send message:");
+      console.log("- Connected:", connected);
+      console.log("- StompClient:", !!stompClient);
+      console.log("- Input:", input);
     }
-  } else {
-    console.log("❌ Cannot send message:");
-    console.log("- Connected:", connected);
-    console.log("- StompClient:", !!stompClient);
-    console.log("- Input:", input);
-  }
-};
+  };
 
+  function handleLogout() {
+    // Disconnect WebSocket
+    if (stompClient) {
+      if (stompClient.active) {
+        stompClient.deactivate();
+        console.log("✅ WebSocket disconnected");
+      }
+      setStompClient(null);
+    }
+
+    // Clear chat context
+    setConnected(false);
+    setRoomId("");
+    setCurrentUser("");
+
+    // Clear local state
+    setMessages([]);
+    setInput("");
+
+    toast.success("Logged out successfully");
+    navigate("/");
+  }
 
   return (
     <>
@@ -156,7 +200,7 @@ function ChatPage() {
                     </span>
                   </h1>
                 </div>
-                <Button size="lg" variant="destructive">
+                <Button onClick={handleLogout} size="lg" variant="destructive">
                   Leave
                 </Button>
               </div>
@@ -165,45 +209,51 @@ function ChatPage() {
         </header>
 
         <main className="w-2/4 mx-auto pb-20 pt-28 h-screen">
-          <div className="w-full h-full bg-gray-900 rounded-2xl overflow-auto">
-            {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  message.sender === currentUser
-                    ? "justify-end"
-                    : "justify-start"
-                } px-4`}
-              >
+          <div
+            ref={chatBoxRef}
+            className="w-full h-full bg-gray-900 rounded-2xl overflow-auto"
+          >
+            {messages.map((message, index) => {
+              const isCurrentUserMessage = message.sender === currentUser;
+
+              return (
                 <div
-                  className={`my-2 flex ${
-                    message.sender === currentUser
-                      ? "bg-green-800"
-                      : "bg-gray-800"
-                  } max-w-xs rounded p-2 min-h-fit`}
+                  key={index}
+                  className={`flex ${
+                    isCurrentUserMessage ? "justify-end" : "justify-start"
+                  } px-4`}
                 >
-                  <div className="flex flex-row gap-3 items-start w-full">
-                    <img
-                      src={`${
-                        message.sender === currentUser
-                          ? "https://avatar.iran.liara.run/public/boy"
-                          : "https://avatar.iran.liara.run/public"
-                      }`}
-                      className="h-10 w-10 flex-shrink-0"
-                      alt=""
-                    />
-                    <div className="flex flex-col gap-1 flex-1 min-w-0">
-                      <p className="text-xs text-gray-50/40 font-semibold break-words">
-                        {message.sender}
-                      </p>
-                      <p className="text-white break-words whitespace-pre-wrap leading-relaxed">
-                        {message.content}
-                      </p>
+                  <div
+                    className={`my-2 flex ${
+                      isCurrentUserMessage ? "bg-green-800" : "bg-gray-800"
+                    } max-w-xs rounded p-2 min-h-fit`}
+                  >
+                    <div className="flex flex-row gap-3 items-start w-full">
+                      <img
+                        src={`${
+                          isCurrentUserMessage
+                            ? "https://avatar.iran.liara.run/public/boy"
+                            : "https://avatar.iran.liara.run/public"
+                        }`}
+                        className="h-10 w-10 flex-shrink-0"
+                        alt=""
+                      />
+                      <div className="flex flex-col gap-1 flex-1 min-w-0 items-center">
+                        <p className="text-xs text-gray-50/40 font-semibold break-words">
+                          {message.sender}
+                          <span className="text-gray-400 ml-2 text-[8px]">
+                            {getTimeAgo(message.timeStamp)}
+                          </span>
+                        </p>
+                        <p className="text-white break-words whitespace-pre-wrap leading-relaxed">
+                          {message.content}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </main>
 

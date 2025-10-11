@@ -22,7 +22,7 @@ const JoinCreateChat = () => {
         userName: ""
     })
 
-    const { roomId, currentUser, setRoomId, setCurrentUser , setConnected } = useChatContext()
+    const { roomId, currentUser,connected, setRoomId, setCurrentUser , setConnected } = useChatContext()
 
     function handleFormInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setDetails({
@@ -40,7 +40,7 @@ const JoinCreateChat = () => {
                 const room = await joinRoomApi(details.roomId) ;
                 toast.success("Joined..😎")
 
-                setCurrentUser(details.userName);
+                setCurrentUser(details.userName.trim());
                 setRoomId(room.roomId);
                 setConnected(true) ;
                 navigate('/chat')
